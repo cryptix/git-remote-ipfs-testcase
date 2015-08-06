@@ -1,0 +1,36 @@
+15:07 <@jbenet> cryptix: have you worked on that git protocol hack?
+15:07 <@jbenet> what was missing on it?
+15:08 < cryptix> jbenet: i got derailed on the '2nd method to fetch objects'
+15:08 <@jbenet> (as a community, we should endeavor to finish the many hacks we have in-flight instead of context switching so much)
+15:08 <@jbenet> what was the 2nd method to fetch objects?
+15:08 < cryptix> i need to get back into it but you basically need to handle the dependency graph of unpacked objects.. which is quite a mouthfull...
+15:09 < cryptix> jbenet: packed vs unpacked objects
+15:09 < cryptix> i think i'll scratch that stuff until somebod needs it
+15:09 < cryptix> and focus on pushing
+15:09 < cryptix> otherwise i need a libgit to handle parsing the objects trees
+15:10 < cryptix> cloining from packed is easy and works
+15:10 < cryptix> (re meta: totally.)
+15:11 <@whyrusleeping> jbenet: i updated rabin
+15:11 <@whyrusleeping> btw
+15:14 <@jbenet> cryptix https://github.com/libgit2/git2go ?
+15:14 <@jbenet> whyrusleeping cool i'll CR in a bit
+15:14 <@jbenet> cryptix: i need it :D
+15:14 < cryptix> jbenet: yea.. i hope not. those are cgo libgit2 bindings
+15:15 < cryptix> jbenet: i think i can pull of push without full fledged git bindings
+15:15 <@jbenet> reming me why cgo matters?
+15:16 < cryptix> well.. i fear it does all the os.Open stuff in c land
+15:16 < cryptix> thus making it hard to port to vfs/ipfs
+15:16 < cryptix> if needed we can go through >clone to /tmp and work there> back but id like to make it sexy :))
+15:17 < cryptix> and again. i dont think this 2nd method for clone is actually needed if with do the ipfs-git-rehost dance with packed objects for now
+15:17 <@jbenet> yeah though non-existent is worse
+15:17 < cryptix> if it makes more sense (dedup wise) to store them unpacked id like to discuss that with somebody more familiar with the process
+15:18 <@whyrusleeping> implementing the git object format stuff is pretty simple
+15:18 < cryptix> or hand it over all together
+15:18 <@whyrusleeping> linus wrote some pretty basic formats
+15:18 < cryptix> yea the pack format sure
+15:19 < cryptix> but then it goes into 'client ask s for hash x' you can just give it the object for that hash but to reconstruct the commit you need all the objects that 
+                 it points to, too
+15:19 < cryptix> thus you need an index of how they all fit together
+15:19 < cryptix> basically you end up doing all the work that a packed repo already did for you
+15:19 < cryptix> and i dont want to duplicate that right now
+15:20 < cryptix> and again: not necessary for push at all
